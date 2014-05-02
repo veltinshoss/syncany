@@ -79,16 +79,20 @@ public class RestoreOperation extends Operation {
 		if (options.getStrategy() == RestoreOperationStrategy.DATABASE_DATE) {
 			restoreFileVersions = getFileTreeAtDate(options.getDatabaseBeforeDate(), restoreFilePaths);
 			
-			for (FileVersion restoreFileVersion : restoreFileVersions) {
-				FileChecksum restoreFileChecksum = restoreFileVersion.getChecksum();
-				
-				if (restoreFileChecksum != null) {
-					multiChunksToDownload.addAll(localDatabase.getMultiChunkIds(restoreFileChecksum));
-				}
-			}
 		}
-		else {
+		else if (options.getStrategy() == RestoreOperationStrategy.FILE_VERSION) {
+			restoreFileVersions = getFileTreeAtVersion(options.getFileVersionNumber(), restoreFilePaths);
+			
+		}else {
 			throw new Exception("Strategy "+options.getStrategy()+" not supported yet.");
+		}
+		
+		for (FileVersion restoreFileVersion : restoreFileVersions) {
+			FileChecksum restoreFileChecksum = restoreFileVersion.getChecksum();
+			
+			if (restoreFileChecksum != null) {
+				multiChunksToDownload.addAll(localDatabase.getMultiChunkIds(restoreFileChecksum));
+			}
 		}
 
 		downloadAndDecryptMultiChunks(multiChunksToDownload);
@@ -123,6 +127,24 @@ public class RestoreOperation extends Operation {
 		return restoreFileVersions;
 	}
 
+	private List<FileVersion> getFileTreeAtVersion(Integer fileVersionNumber, List<String> restoreFilePaths) {
+		Map<String, FileVersion> entireFileTreeAtDate = localDatabase.getFileTreeAtVersion(fileVersionNumber);
+		List<FileVersion> restoreFileVersions = new ArrayList<FileVersion>();
+		
+		for (FileVersion restoreFileVersion : entireFileTreeAtDate.values()) {			
+			if (restoreFilePaths.size() > 0) {
+				if (restoreFilePaths.contains(restoreFileVersion.getPath())) {
+					restoreFileVersions.add(restoreFileVersion);	
+				}				
+			}
+			else {
+				restoreFileVersions.add(restoreFileVersion);
+			}			
+		}
+		
+		return restoreFileVersions;
+	}
+	
 	private void downloadAndDecryptMultiChunks(Set<MultiChunkId> unknownMultiChunkIds) throws StorageException, IOException {
 		// TODO [medium] Duplicate code in DownOperation
 

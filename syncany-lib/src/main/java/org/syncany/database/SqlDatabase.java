@@ -196,6 +196,10 @@ public class SqlDatabase {
 		return fileVersionDao.getFileTreeAtDate(date);
 	}
 
+	public Map<String, FileVersion> getFileTreeAtVersion(Integer fileVersionNumber) {
+		return fileVersionDao.getFileTreeAtVersion(fileVersionNumber);
+	}
+	
 	public Map<FileHistoryId, FileVersion> getFileHistoriesWithMostRecentPurgeVersion(int keepVersionsCount) {
 		return fileVersionDao.getFileHistoriesWithMostRecentPurgeVersion(keepVersionsCount);
 	}	

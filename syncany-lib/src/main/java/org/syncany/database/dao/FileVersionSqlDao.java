@@ -173,6 +173,28 @@ public class FileVersionSqlDao extends AbstractSqlDao {
 	}
 	
 
+	/**
+	 * Queries the database for the {@link FileVersion}s active at the given fileVersionNumber and
+	 * returns it as a map.
+	 * 
+	 * <p>Keys in the returned map correspond to the file version's relative file path,
+	 * and values to the actual {@link FileVersion} object.
+	 * 
+	 * @param fileVersionNumber Integer for which the file tree should be queried
+	 * @return Returns the file tree at the given date as a map of relative paths to {@link FileVersion} objects
+	 */
+	public Map<String, FileVersion> getFileTreeAtVersion(Integer fileVersionNumber) {		
+		try (PreparedStatement preparedStatement = getStatement("/sql/fileversion.select.master.getFileTreeAtVersion.sql")) {
+			preparedStatement.setInt(1, fileVersionNumber.intValue());
+			preparedStatement.setInt(2, fileVersionNumber.intValue());
+			
+			return getFileTree(preparedStatement);					
+		}
+		catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public Map<FileHistoryId, FileVersion> getFileHistoriesWithMostRecentPurgeVersion(int keepVersionsCount) {
 		try (PreparedStatement preparedStatement = getStatement("/sql/fileversion.select.all.getMostRecentPurgeVersions.sql")) {
 			preparedStatement.setInt(1, keepVersionsCount);
